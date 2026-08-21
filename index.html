@@ -1,651 +1,304 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Overhook: Abyssal Surge</title>
-<style>
-  :root {
-    --bg-dark: #070012;
-    --accent-red: #ff0055;
-    --accent-gold: #ffd700;
-    --accent-cyan: #00f0ff;
-    --ink: #ffffff;
-    --ink-dim: #bb99cc;
-    --panel-bg: rgba(18, 4, 30, 0.95);
-  }
-  * { box-sizing: border-box; }
-  html, body {
-    margin: 0; padding: 0; width: 100%; height: 100%;
-    background: var(--bg-dark);
-    overflow: hidden;
-    font-family: 'Courier New', Courier, monospace;
-    user-select: none;
-    touch-action: none;
-  }
-  canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unstable Creators</title>
+    <style>
+        /* CSS variables for dark theme and gradients */
+        :root {
+            --bg-dark: #121212;
+            --panel-bg: rgba(30, 30, 30, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #ffffff;
+            --text-sub: #b3b3b3;
+            --transition: 0.3s ease;
+        }
 
-  .overlay {
-    position: fixed; inset: 0;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; color: var(--ink);
-    background: radial-gradient(ellipse at 50% 35%, rgba(80,0,40,0.88), rgba(7,0,18,0.98) 80%);
-    pointer-events: none;
-    z-index: 10;
-  }
-  .overlay.hidden { display: none !important; }
-  .overlay > * { pointer-events: auto; }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-  .title {
-    font-size: clamp(36px, 7vw, 68px);
-    font-weight: 900; letter-spacing: 3px; margin: 0;
-    color: var(--accent-red);
-    text-shadow: 0 0 20px var(--accent-red), 4px 4px 0 #000;
-  }
-  .author {
-    color: var(--accent-gold); font-size: 14px; font-weight: bold;
-    letter-spacing: 2px; text-transform: uppercase; margin-top: 4px;
-  }
+        /* Sidebar Styling (Discord-like nameplates) */
+        .sidebar {
+            width: 280px;
+            background: #181818;
+            border-right: 1px solid var(--glass-border);
+            padding: 20px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: var(--transition);
+        }
 
-  .menu-box {
-    background: var(--panel-bg);
-    border: 2px solid #880033;
-    border-radius: 10px;
-    padding: 18px;
-    margin: 15px 0;
-    width: min(90%, 460px);
-    box-shadow: 0 0 25px rgba(255, 0, 85, 0.3);
-  }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #fff, #888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-  .tabs { display: flex; gap: 10px; margin-bottom: 12px; justify-content: center; }
-  .tab-btn {
-    background: #200518; border: 1px solid #660022; color: var(--ink-dim);
-    padding: 8px 16px; font-family: inherit; font-weight: bold; cursor: pointer;
-    border-radius: 4px; transition: 0.2s;
-  }
-  .tab-btn.active, .tab-btn:hover { color: #fff; border-color: var(--accent-red); background: #550022; }
+        .creator-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: var(--transition);
+        }
 
-  .panel { display: none; }
-  .panel.active { display: block; }
+        .creator-card:hover, .creator-card.active {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--glass-border);
+            transform: scale(1.03); /* Hover zooms mentioned in the video */
+        }
 
-  .shop-item {
-    display: flex; justify-content: space-between; align-items: center;
-    background: rgba(255,255,255,0.06);
-    margin: 8px 0; padding: 8px 12px; border-radius: 6px; border: 1px solid #440018;
-  }
-  .shop-info { text-align: left; }
-  .shop-name { font-weight: bold; color: #fff; font-size: 13px; }
-  .shop-desc { font-size: 11px; color: var(--ink-dim); margin-top: 2px; }
-  .buy-btn {
-    background: #330015; border: 1px solid var(--accent-gold); color: var(--accent-gold);
-    font-family: inherit; font-weight: bold; padding: 6px 12px; border-radius: 4px; cursor: pointer;
-  }
-  .buy-btn:hover { background: var(--accent-gold); color: #000; }
-  .buy-btn:disabled { opacity: 0.35; cursor: not-allowed; border-color: #555; color: #555; }
+        .pfp {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #333;
+            object-fit: cover;
+        }
 
-  .btn-group {
-    display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
-  }
+        .creator-info {
+            display: flex;
+            flex-direction: column;
+        }
 
-  .btn {
-    appearance: none; border: none; cursor: pointer;
-    font-family: inherit; font-weight: 900; letter-spacing: 2px;
-    font-size: 16px; color: #fff; padding: 12px 24px; border-radius: 6px;
-    background: var(--accent-red); border: 2px solid #fff;
-    box-shadow: 0 0 20px rgba(255,0,85,0.8); transition: 0.15s;
-  }
-  .btn:hover { transform: scale(1.05); background: #ff2277; }
-  .btn-secondary {
-    background: #200518; border-color: var(--accent-gold); color: var(--accent-gold);
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
-  }
-  .btn-secondary:hover { background: #400a30; }
+        .creator-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
 
-  #hud {
-    position: fixed; top: 15px; left: 0; right: 0;
-    display: flex; justify-content: space-between; padding: 0 20px;
-    pointer-events: none; z-index: 5; font-weight: 900; font-size: 13px;
-  }
-  .hud-pill {
-    background: rgba(10,0,22,0.88); border: 1px solid #660022;
-    padding: 8px 14px; border-radius: 6px; display: flex; gap: 15px; color: #fff;
-    box-shadow: 0 0 12px rgba(0,0,0,0.6);
-  }
-  .dash-bar-wrap { width: 120px; height: 10px; background: #220010; border: 1px solid #660022; border-radius: 5px; overflow: hidden; margin-top: 4px; }
-  .dash-bar-fill { width: 0%; height: 100%; background: var(--accent-cyan); box-shadow: 0 0 8px var(--accent-cyan); }
-</style>
+        .sub-count {
+            font-size: 12px;
+            color: var(--text-sub);
+        }
+
+        /* Main Content Section */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+            /* Gray to green gradient he experimented with at the end */
+            background: linear-gradient(135deg, #121212 0%, #1a2620 100%); 
+        }
+
+        .banner {
+            height: 250px;
+            background: linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.2)), url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564') center/cover;
+            display: flex;
+            align-items: flex-end;
+            padding: 40px;
+            transition: var(--transition);
+        }
+
+        .banner-content h1 {
+            margin: 0;
+            font-size: 48px;
+        }
+
+        .banner-content p {
+            margin: 5px 0 0 0;
+            font-size: 20px;
+            color: var(--text-sub);
+        }
+
+        /* Videos Grid (Glassmorphism design) */
+        .videos-section {
+            padding: 40px;
+        }
+
+        .videos-section h2 {
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .video-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px) scale(1.03);
+            border-color: rgba(255,255,255,0.3);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .thumbnail {
+            width: 100%;
+            height: 160px;
+            background: #2a2a2a;
+            object-fit: cover;
+        }
+
+        .video-info {
+            padding: 15px;
+        }
+
+        .video-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0 0 10px 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .video-meta {
+            font-size: 12px;
+            color: var(--text-sub);
+        }
+    </style>
 </head>
 <body>
 
-<canvas id="game"></canvas>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">UNSTABLE</div>
+        
+        <!-- Creator Cards -->
+        <div class="creator-card active" onclick="switchCreator('wemmbu', this)">
+            <img class="pfp" src="https://api.dicebear.com/7.x/avataaars/svg?seed=wemmbu" alt="Wemmbu">
+            <div class="creator-info">
+                <span class="creator-name">Wemmbu</span>
+                <span class="sub-count">🔴 4.35M Subs</span>
+            </div>
+        </div>
 
-<div id="hud" style="display:none;">
-  <div class="hud-pill">
-    <div>DEPTH: <span id="scoreVal" style="color:var(--accent-red);">0</span>m</div>
-    <div>EMBERS: <span id="emberVal" style="color:var(--accent-gold);">0</span></div>
-  </div>
-  <div class="hud-pill" style="flex-direction:column; align-items:flex-end;">
-    <div>DASH [R-CLICK / SHIFT] | RESET [R]</div>
-    <div class="dash-bar-wrap"><div id="dashFill" class="dash-bar-fill"></div></div>
-  </div>
-</div>
+        <div class="creator-card" onclick="switchCreator('parrot', this)">
+            <img class="pfp" src="https://api.dicebear.com/7.x/avataaars/svg?seed=parrot" alt="Parrot">
+            <div class="creator-info">
+                <span class="creator-name">Parrot</span>
+                <span class="sub-count">🔴 1.2M Subs</span>
+            </div>
+        </div>
 
-<div id="startScreen" class="overlay">
-  <h1 class="title">OVERHOOK</h1>
-  <div class="author">Made by FryedCheese</div>
+        <div class="creator-card" onclick="switchCreator('flame', this)">
+            <img class="pfp" src="https://api.dicebear.com/7.x/avataaars/svg?seed=flame" alt="Flame">
+            <div class="creator-info">
+                <span class="creator-name">Flame</span>
+                <span class="sub-count">🔴 2.7M Subs</span>
+            </div>
+        </div>
 
-  <div class="menu-box">
-    <div class="tabs">
-      <button class="tab-btn active" id="tabHowBtn">CONTROLS</button>
-      <button class="tab-btn" id="tabShopBtn">ABYSS SHOP</button>
+        <div class="creator-card" onclick="switchCreator('spoke', this)">
+            <img class="pfp" src="https://api.dicebear.com/7.x/avataaars/svg?seed=spoke" alt="Spoke">
+            <div class="creator-info">
+                <span class="creator-name">Spoke</span>
+                <span class="sub-count">🔴 1.5M Subs</span>
+            </div>
+        </div>
     </div>
 
-    <div id="howTo" class="panel active">
-      <p style="color:var(--ink-dim); font-size:12px; line-height:1.6; margin:5px 0;">
-        &bull; <b>LEFT CLICK / SPACE:</b> Attach tendril to cloud eyes.<br>
-        &bull; <b>RAPID CLICK:</b> Thrust forward with speed.<br>
-        &bull; <b>RIGHT CLICK / SHIFT:</b> Activate Sonic Dash when full.<br>
-        &bull; <b>PRESS 'R':</b> Instantly reset / end run.<br>
-        &bull; Dodge <b>Spiked Void Eyes</b>!<br>
-        &bull; <span style="color:var(--accent-gold)">Embers & upgrades save automatically to your browser!</span>
-      </p>
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div class="banner">
+            <div class="banner-content">
+                <h1 id="page-title">Wemmbu</h1>
+                <p id="page-desc">Minecraft & Entertainment • 4.35M Subscribers</p>
+            </div>
+        </div>
+
+        <div class="videos-section">
+            <h2>Latest Videos</h2>
+            <div class="video-grid" id="video-grid">
+                <!-- Videos inject here via JavaScript -->
+            </div>
+        </div>
     </div>
 
-    <div id="shop" class="panel">
-      <div style="font-size:13px; color:var(--accent-gold); margin-bottom:8px;">Embers: <span id="shopEmbers">0</span></div>
-      <div id="shopContainer"></div>
-    </div>
-  </div>
+    <script>
+        // Placeholder data simulating the YouTube API integration Caleb mentioned
+        const creatorData = {
+            wemmbu: {
+                name: 'Wemmbu',
+                desc: 'Minecraft & Entertainment • 4.35M Subscribers',
+                videos: ['I trapped 100 players...', 'Minecraft but it is cursed', 'Surviving 100 Days in Hardcore', 'The ultimate base build']
+            },
+            parrot: {
+                name: 'Parrot',
+                desc: 'Gaming & Mods • 1.2M Subscribers',
+                videos: ['Testing weird mods', 'I made a new server', 'Parrot SMP Episode 1', 'Don\'t do this in Minecraft']
+            },
+            flame: {
+                name: 'Flame',
+                desc: 'PVP & Challenges • 2.7M Subscribers',
+                videos: ['Bedwars against pros', '1v1 tournament highlights', 'Minecraft speedrun record', 'How to win every PVP match']
+            },
+            spoke: {
+                name: 'Spoke',
+                desc: 'Comedy & SMPs • 1.5M Subscribers',
+                videos: ['Spoke SMP finale', 'Trolling my friends', 'Building a massive farm', 'The funniest modpack ever']
+            }
+        };
 
-  <button class="btn" id="playBtn">ENTER THE VOID</button>
-</div>
-
-<div id="gameOverScreen" class="overlay hidden">
-  <h2 class="title" style="font-size:36px;">CONSUMED BY THE VOID</h2>
-  <div class="menu-box" style="text-align:center;">
-    <p>Depth Reached: <b id="finalScore" style="color:var(--accent-red); font-size:22px;">0</b> m</p>
-    <p>Embers Collected: <b id="finalEmbers" style="color:var(--accent-gold); font-size:22px;">0</b></p>
-  </div>
-  <div class="btn-group">
-    <button class="btn" id="retryBtn">TRY AGAIN</button>
-    <button class="btn btn-secondary" id="mainMenuBtn">MAIN MENU</button>
-  </div>
-</div>
-
-<script>
-(function(){
-  // Audio System
-  let audioCtx = null;
-  function getAudioCtx() {
-    if (!audioCtx) {
-      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
-    }
-    if (audioCtx && audioCtx.state === 'suspended') {
-      audioCtx.resume();
-    }
-    return audioCtx;
-  }
-
-  function playTone(freq, type, duration, vol=0.15) {
-    try {
-      const ctx = getAudioCtx();
-      if (!ctx || ctx.state !== 'running') return;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      const now = ctx.currentTime;
-      osc.type = type; osc.frequency.setValueAtTime(freq, now);
-      gain.gain.setValueAtTime(vol, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(now); osc.stop(now + duration);
-    } catch(e) {}
-  }
-
-  // Persistent Save / Load Engine
-  let embers = 0;
-  const upgrades = { range: 0, boost: 0, magnet: 0, shield: 0 };
-
-  function loadSavedData() {
-    try {
-      const savedEmbers = localStorage.getItem('oh_embers');
-      if (savedEmbers !== null) embers = parseInt(savedEmbers, 10) || 0;
-
-      for (let key in upgrades) {
-        const savedLvl = localStorage.getItem('oh_upg_' + key);
-        if (savedLvl !== null) upgrades[key] = parseInt(savedLvl, 10) || 0;
-      }
-    } catch(e) {}
-  }
-
-  function saveData() {
-    try {
-      localStorage.setItem('oh_embers', embers.toString());
-      for (let key in upgrades) {
-        localStorage.setItem('oh_upg_' + key, upgrades[key].toString());
-      }
-    } catch(e) {}
-  }
-
-  loadSavedData();
-
-  const shopData = [
-    { id: 'range', name: 'Tendril Reach', desc: 'Higher grapple distance', baseCost: 15 },
-    { id: 'boost', name: 'Click Impulse', desc: 'Faster rapid-click speed', baseCost: 20 },
-    { id: 'magnet', name: 'Coin Luck', desc: 'More clouds carry embers', baseCost: 15 },
-    { id: 'shield', name: 'Void Shield', desc: 'Absorb 1 hazard hit', baseCost: 35 }
-  ];
-
-  document.getElementById('tabHowBtn').onclick = function() {
-    document.getElementById('tabShopBtn').classList.remove('active');
-    this.classList.add('active');
-    document.getElementById('shop').classList.remove('active');
-    document.getElementById('howTo').classList.add('active');
-  };
-
-  document.getElementById('tabShopBtn').onclick = function() {
-    document.getElementById('tabHowBtn').classList.remove('active');
-    this.classList.add('active');
-    document.getElementById('howTo').classList.remove('active');
-    document.getElementById('shop').classList.add('active');
-    renderShop();
-  };
-
-  function renderShop() {
-    document.getElementById('shopEmbers').textContent = embers;
-    const container = document.getElementById('shopContainer');
-    container.innerHTML = '';
-    shopData.forEach(item => {
-      const lvl = upgrades[item.id];
-      const cost = item.baseCost * (lvl + 1);
-      const div = document.createElement('div');
-      div.className = 'shop-item';
-      div.innerHTML =
-        '<div class="shop-info">' +
-          '<div class="shop-name">' + item.name + ' (Lvl ' + lvl + ')</div>' +
-          '<div class="shop-desc">' + item.desc + '</div>' +
-        '</div>' +
-        '<button class="buy-btn" ' + (embers < cost ? 'disabled' : '') +
-        ' data-id="' + item.id + '" data-cost="' + cost + '">' + cost + ' 🪙</button>';
-      container.appendChild(div);
-    });
-    container.querySelectorAll('.buy-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        buyUpgrade(btn.getAttribute('data-id'), parseInt(btn.getAttribute('data-cost'), 10));
-      });
-    });
-  }
-
-  function buyUpgrade(id, cost) {
-    if (embers >= cost) {
-      embers -= cost;
-      upgrades[id]++;
-      saveData();
-      playTone(600, 'sine', 0.15);
-      renderShop();
-    }
-  }
-
-  const canvas = document.getElementById('game');
-  const ctx = canvas.getContext('2d');
-  let W=0, H=0, DPR=Math.min(window.devicePixelRatio||1,2);
-
-  function resize() {
-    W = window.innerWidth; H = window.innerHeight;
-    canvas.width = W*DPR; canvas.height = H*DPR;
-    ctx.setTransform(DPR,0,0,DPR,0,0);
-  }
-  window.addEventListener('resize', resize);
-
-  const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
-
-  let state = 'start';
-  let player = null;
-  let camera = { x: 0, y: 0 };
-  let clouds = [];
-  let grapple = { active: false, cloud: null, length: 0 };
-  let pointer = {x:0, y:0, down:false};
-  let score = 0, dashMeter = 0, hasShield = false;
-  let furthestSpawnX = 0, centerY = 0, lastClickTime = 0, shake = 0;
-
-  function initGame() {
-    getAudioCtx();
-    player = { x: 150, y: H*0.4, vx: 5.5, vy: -2, r: 15, pulseScale: 1, isDashing: 0 };
-    camera = { x: player.x - W*0.35, y: player.y - H*0.45 };
-    clouds = [];
-    grapple = { active: false, cloud: null, length: 0 };
-    score = 0; dashMeter = 0;
-    hasShield = upgrades.shield > 0;
-    centerY = player.y;
-
-    addCloud(280, player.y + 20, 36, 'normal');
-    furthestSpawnX = 280;
-    while (furthestSpawnX < camera.x + W*2) spawnNextChunk();
-  }
-
-  function addCloud(x, y, r, type, hasCoin) {
-    clouds.push({ x, y, r, type, hasCoin: !!hasCoin, pulse: Math.random()*Math.PI*2 });
-  }
-
-  function spawnNextChunk() {
-    const gap = 150 + Math.random()*110;
-    furthestSpawnX += gap;
-    centerY = clamp(centerY + (Math.random()-0.5)*80, H*0.2, H*0.7);
-    const y = centerY + (Math.random()-0.5)*100;
-
-    const rand = Math.random();
-    let type = 'normal';
-    if (rand < 0.20) type = 'boost';
-    else if (rand < 0.35) type = 'hazard';
-
-    const coinChance = 0.4 + upgrades.magnet * 0.06;
-    const hasCoin = type !== 'hazard' && Math.random() < coinChance;
-
-    addCloud(furthestSpawnX, y, 34, type, hasCoin);
-  }
-
-  function triggerSpeedBoost() {
-    const now = performance.now();
-    const dt = now - lastClickTime;
-    lastClickTime = now;
-
-    if (dt < 350) {
-      const boostPower = 2.2 + upgrades.boost * 0.4;
-      player.vx += boostPower;
-      player.vy -= 1.2;
-      player.pulseScale = 1.35;
-      dashMeter = Math.min(100, dashMeter + 15);
-      playTone(450, 'sine', 0.08);
-    }
-  }
-
-  function triggerSonicDash() {
-    if (state !== 'playing' || !player) return;
-    if (dashMeter >= 100) {
-      dashMeter = 0;
-      player.isDashing = 20;
-      player.vx += 18;
-      shake = 8;
-      playTone(800, 'sawtooth', 0.2);
-    }
-  }
-
-  function onDown(e) {
-    getAudioCtx();
-    if (e.button === 2) { triggerSonicDash(); return; }
-    pointer.x = e.clientX; pointer.y = e.clientY; pointer.down = true;
-
-    if (state === 'playing' && player) {
-      triggerSpeedBoost();
-      const target = findTarget();
-      if (target) {
-        if (target.type === 'hazard') {
-          if (hasShield) { hasShield = false; shake = 8; playTone(200, 'sawtooth', 0.2); }
-          else { player.vx *= 0.3; shake = 10; playTone(100, 'sawtooth', 0.3); }
-        } else {
-          grapple.active = true; grapple.cloud = target;
-          grapple.length = Math.hypot(player.x - target.x, player.y - target.y);
-          if (target.type === 'boost') { player.vx += 8; playTone(700, 'sine', 0.15); }
-          else playTone(300, 'triangle', 0.1);
-
-          if (target.hasCoin) {
-            target.hasCoin = false;
-            embers++;
-            saveData();
-            player.pulseScale = 1.5;
-            playTone(950, 'sine', 0.12);
-          }
-        }
-      }
-    }
-  }
-
-  function findTarget() {
-    const range = 350 + upgrades.range * 45;
-    let best = null, minD = Infinity;
-    for (const c of clouds) {
-      const dPlayer = Math.hypot(c.x - player.x, c.y - player.y);
-      if (dPlayer < range) {
-        const dPointer = Math.hypot(c.x - (pointer.x + camera.x), c.y - (pointer.y + camera.y));
-        if (dPointer < minD) { minD = dPointer; best = c; }
-      }
-    }
-    return best;
-  }
-
-  function findNearestToPointer() {
-    if (!player) return null;
-    const worldX = pointer.x + camera.x, worldY = pointer.y + camera.y;
-    let best = null, minD = Infinity;
-    for (const c of clouds) {
-      const d = Math.hypot(c.x - worldX, c.y - worldY);
-      if (d < minD) { minD = d; best = c; }
-    }
-    return best;
-  }
-
-  window.addEventListener('pointerdown', onDown);
-  window.addEventListener('pointerup', () => { pointer.down = false; if (grapple) grapple.active = false; });
-  window.addEventListener('contextmenu', e => e.preventDefault());
-  
-  window.addEventListener('keydown', e => {
-    if (e.code === 'Space') { 
-      e.preventDefault(); 
-      onDown({ clientX: W/2, clientY: H/2, button: 0 }); 
-    }
-    if (e.shiftKey) triggerSonicDash();
-    if (e.key === 'r' || e.key === 'R') {
-      if (state === 'playing') {
-        gameOver();
-      }
-    }
-  });
-
-  function update(dt) {
-    if (!player) return;
-    const nDt = clamp(dt*60, 0.001, 1.8);
-
-    if (player.isDashing > 0) {
-      player.isDashing -= nDt;
-      player.vy = 0;
-    } else {
-      player.vy += 0.45 * nDt;
-      player.vx *= Math.pow(0.998, nDt);
-    }
-
-    player.x += player.vx * nDt;
-    player.y += player.vy * nDt;
-
-    if (player.pulseScale > 1) player.pulseScale -= 0.04 * nDt;
-
-    if (grapple.active && grapple.cloud) {
-      const c = grapple.cloud;
-      const dx = player.x - c.x, dy = player.y - c.y;
-      const dist = Math.hypot(dx, dy) || 1;
-      const nx = dx/dist, ny = dy/dist;
-      player.x = c.x + nx * grapple.length;
-      player.y = c.y + ny * grapple.length;
-      const rad = player.vx*nx + player.vy*ny;
-      player.vx -= rad * nx; player.vy -= rad * ny;
-    }
-
-    camera.x = player.x - W*0.35;
-    camera.y += (player.y - H*0.45 - camera.y) * 0.1 * nDt;
-
-    while (furthestSpawnX < camera.x + W*1.8) spawnNextChunk();
-    if (clouds.length > 6) clouds = clouds.filter(c => c.x > camera.x - 400);
-
-    score = Math.max(score, Math.floor((player.x - 150)/10));
-    document.getElementById('scoreVal').textContent = score;
-    document.getElementById('emberVal').textContent = embers;
-    document.getElementById('dashFill').style.width = dashMeter + '%';
-
-    if (shake > 0) shake -= nDt;
-    if (player.y - camera.y > H + 250) gameOver();
-  }
-
-  function gameOver() {
-    if (state !== 'playing') return;
-    state = 'gameover';
-    saveData();
-    document.getElementById('finalScore').textContent = score;
-    document.getElementById('finalEmbers').textContent = embers;
-    document.getElementById('hud').style.display = 'none';
-    document.getElementById('gameOverScreen').classList.remove('hidden');
-    playTone(100, 'sawtooth', 0.4);
-  }
-
-  function draw() {
-    ctx.save();
-    if (shake > 0) ctx.translate((Math.random()-0.5)*shake, (Math.random()-0.5)*shake);
-
-    const bg = ctx.createLinearGradient(0,0,0,H);
-    bg.addColorStop(0, '#0a001a'); bg.addColorStop(1, '#4a0022');
-    ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
-
-    if (clouds && clouds.length) {
-      for (const c of clouds) {
-        const sx = c.x - camera.x, sy = c.y - camera.y;
-        if (sx < -100 || sx > W+100) continue;
-
-        ctx.save();
-        if (c.type === 'boost') {
-          ctx.fillStyle = '#002b40'; ctx.strokeStyle = '#00f0ff';
-          ctx.shadowColor = '#00f0ff'; ctx.shadowBlur = 12;
-        } else if (c.type === 'hazard') {
-          ctx.fillStyle = '#400014'; ctx.strokeStyle = '#ff0055';
-          ctx.shadowColor = '#ff0055'; ctx.shadowBlur = 14;
-        } else {
-          ctx.fillStyle = '#18002a'; ctx.strokeStyle = '#ffcc00';
-          ctx.shadowColor = '#ffcc00'; ctx.shadowBlur = 8;
+        // Populate the video grid dynamically
+        function populateVideos(creatorKey) {
+            const grid = document.getElementById('video-grid');
+            grid.innerHTML = ''; 
+            
+            const data = creatorData[creatorKey];
+            
+            data.videos.forEach((title) => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                // Using placeholder images for video thumbnails
+                card.innerHTML = `
+                    <img class="thumbnail" src="https://images.unsplash.com/photo-1627398225081-24c89544eb1a?q=80&w=600&auto=format&fit=crop" alt="Thumbnail">
+                    <div class="video-info">
+                        <h3 class="video-title">${title}</h3>
+                        <span class="video-meta">3 days ago • 100K views</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
         }
 
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.arc(sx, sy, c.r, 0, Math.PI*2);
-        ctx.arc(sx-12, sy+4, c.r*0.6, 0, Math.PI*2);
-        ctx.arc(sx+12, sy+4, c.r*0.6, 0, Math.PI*2);
-        ctx.arc(sx, sy-8, c.r*0.65, 0, Math.PI*2);
-        ctx.fill(); ctx.stroke();
+        // Handle sidebar switching
+        function switchCreator(creatorKey, element) {
+            // Update the active state on the sidebar
+            document.querySelectorAll('.creator-card').forEach(card => card.classList.remove('active'));
+            element.classList.add('active');
 
-        ctx.fillStyle = c.type === 'hazard' ? '#ff0055' : (c.type==='boost'?'#00f0ff':'#ffffff');
-        ctx.beginPath(); ctx.arc(sx, sy, 6, 0, Math.PI*2); ctx.fill();
-        ctx.restore();
+            // Update Page Content
+            document.getElementById('page-title').innerText = creatorData[creatorKey].name;
+            document.getElementById('page-desc').innerText = creatorData[creatorKey].desc;
 
-        if (c.hasCoin) {
-          const bob = Math.sin(performance.now()*0.004 + c.pulse) * 3;
-          const cx = sx, cy = sy - c.r - 14 + bob;
-          ctx.save();
-          ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 12;
-          ctx.fillStyle = '#ffd700'; ctx.strokeStyle = '#000000'; ctx.lineWidth = 1.5;
-          ctx.beginPath(); ctx.arc(cx, cy, 9, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-          ctx.fillStyle = '#000000'; ctx.font = '900 11px Courier New';
-          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.fillText('$', cx, cy+1);
-          ctx.restore();
+            // Load new videos
+            populateVideos(creatorKey);
         }
-      }
-    }
 
-    if (grapple && grapple.active && grapple.cloud) {
-      ctx.save();
-      ctx.strokeStyle = '#00f0ff'; ctx.lineWidth = 3.5;
-      ctx.shadowColor = '#00f0ff'; ctx.shadowBlur = 15;
-      ctx.beginPath();
-      ctx.moveTo(grapple.cloud.x - camera.x, grapple.cloud.y - camera.y);
-      ctx.lineTo(player.x - camera.x, player.y - camera.y);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    if (state === 'playing' && player && !grapple.active) {
-      const aim = findNearestToPointer();
-      if (aim) {
-        const range = 350 + upgrades.range * 45;
-        const inRange = Math.hypot(aim.x - player.x, aim.y - player.y) < range;
-        const sx = aim.x - camera.x, sy = aim.y - camera.y;
-        const pulse = Math.sin(performance.now()*0.008) * 3;
-
-        ctx.save();
-        if (!inRange) {
-          ctx.strokeStyle = 'rgba(180,180,200,0.4)';
-          ctx.setLineDash([5, 6]); ctx.lineWidth = 2;
-        } else if (aim.type === 'hazard') {
-          ctx.strokeStyle = '#ff0055'; ctx.lineWidth = 2.5; ctx.shadowColor = '#ff0055'; ctx.shadowBlur = 12;
-        } else if (aim.type === 'boost') {
-          ctx.strokeStyle = '#00f0ff'; ctx.lineWidth = 2.5; ctx.shadowColor = '#00f0ff'; ctx.shadowBlur = 12;
-        } else {
-          ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 2.5; ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 12;
-        }
-        ctx.beginPath();
-        ctx.arc(sx, sy, aim.r + 12 + (inRange ? pulse : 0), 0, Math.PI*2);
-        ctx.stroke();
-        ctx.restore();
-
-        ctx.save();
-        ctx.font = 'bold 11px Courier New'; ctx.textAlign = 'center';
-        const label = !inRange ? 'TOO FAR' : (aim.type === 'hazard' ? 'DANGER' : (aim.type === 'boost' ? 'BOOST' : 'HOOK'));
-        ctx.fillStyle = !inRange ? 'rgba(180,180,200,0.7)' : (aim.type === 'hazard' ? '#ff0055' : (aim.type === 'boost' ? '#00f0ff' : '#ffd700'));
-        ctx.fillText(label, sx, sy - aim.r - 22);
-        ctx.restore();
-      }
-    }
-
-    if (state === 'playing' && player) {
-      const px = player.x - camera.x, py = player.y - camera.y;
-      ctx.save();
-      ctx.fillStyle = player.isDashing > 0 ? '#00f0ff' : '#ffffff';
-      ctx.strokeStyle = '#ff0055'; ctx.lineWidth = 3;
-      ctx.shadowColor = player.isDashing > 0 ? '#00f0ff' : '#ff0055'; ctx.shadowBlur = 18;
-      
-      ctx.beginPath(); ctx.arc(px, py, player.r * (player.pulseScale||1), 0, Math.PI*2);
-      ctx.fill(); ctx.stroke();
-
-      ctx.fillStyle = '#ff0055';
-      ctx.beginPath(); ctx.arc(px + 4, py - 2, 3, 0, Math.PI * 2); ctx.fill();
-
-      if (hasShield) {
-        ctx.strokeStyle = '#00f0ff'; ctx.lineWidth = 2.5;
-        ctx.beginPath(); ctx.arc(px, py, player.r + 6, 0, Math.PI*2); ctx.stroke();
-      }
-      ctx.restore();
-    }
-
-    ctx.restore();
-  }
-
-  let last = performance.now();
-  function frame(now) {
-    const dt = Math.min((now - last)/1000, 0.05);
-    last = now;
-    if (state === 'playing') update(dt);
-    draw();
-    requestAnimationFrame(frame);
-  }
-
-  document.getElementById('playBtn').onclick = () => {
-    state = 'playing';
-    document.getElementById('startScreen').classList.add('hidden');
-    document.getElementById('hud').style.display = 'flex';
-    initGame();
-  };
-
-  document.getElementById('retryBtn').onclick = () => {
-    state = 'playing';
-    document.getElementById('gameOverScreen').classList.add('hidden');
-    document.getElementById('hud').style.display = 'flex';
-    initGame();
-  };
-
-  document.getElementById('mainMenuBtn').onclick = () => {
-    state = 'start';
-    document.getElementById('gameOverScreen').classList.add('hidden');
-    document.getElementById('startScreen').classList.remove('hidden');
-    document.getElementById('hud').style.display = 'none';
-  };
-
-  resize();
-  requestAnimationFrame(frame);
-})();
-</script>
+        // Initialize with Wemmbu's page on load
+        window.onload = () => {
+            populateVideos('wemmbu');
+        };
+    </script>
 </body>
 </html>
