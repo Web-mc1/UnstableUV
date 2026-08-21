@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unstable Creators Live</title>
     <style>
-        /* [CSS IS EXACTLY THE SAME AS BEFORE] */
         :root {
             --bg-dark: #121212;
             --panel-bg: rgba(30, 30, 30, 0.7);
@@ -181,12 +180,12 @@
     <div class="sidebar">
         <div class="logo">UNSTABLE</div>
         
-        <!-- UI elements that we will update with live API data -->
-        <div class="creator-card active" onclick="loadCreator('@Wemmbu', this)" id="card-@Wemmbu">
-            <img class="pfp" src="" alt="Wemmbu" id="pfp-@Wemmbu">
+        <!-- UI elements updated with correct live API handles -->
+        <div class="creator-card active" onclick="loadCreator('@wemmbumc', this)" id="card-@wemmbumc">
+            <img class="pfp" src="" alt="Wemmbu" id="pfp-@wemmbumc">
             <div class="creator-info">
                 <span class="creator-name">Wemmbu</span>
-                <span class="sub-count" id="subs-@Wemmbu">Loading...</span>
+                <span class="sub-count" id="subs-@wemmbumc">Loading...</span>
             </div>
         </div>
 
@@ -198,11 +197,11 @@
             </div>
         </div>
 
-        <div class="creator-card" onclick="loadCreator('@FlameFR', this)" id="card-@FlameFR">
-            <img class="pfp" src="" alt="Flame" id="pfp-@FlameFR">
+        <div class="creator-card" onclick="loadCreator('@FlameFrags', this)" id="card-@FlameFrags">
+            <img class="pfp" src="" alt="Flame" id="pfp-@FlameFrags">
             <div class="creator-info">
                 <span class="creator-name">Flame</span>
-                <span class="sub-count" id="subs-@FlameFR">Loading...</span>
+                <span class="sub-count" id="subs-@FlameFrags">Loading...</span>
             </div>
         </div>
 
@@ -233,7 +232,7 @@
     </div>
 
     <script>
-        // --- PUT YOUR GOOGLE CLOUD YOUTUBE API KEY HERE ---
+        // API Key
         const API_KEY = 'AIzaSyDJOX9IPCUCs8M8Mkv_ZdYd-pwxi5Z4fpQ';
         
         // Formats subscriber count (e.g., 4350000 -> 4.35M)
@@ -277,7 +276,6 @@
             const grid = document.getElementById('video-grid');
             grid.innerHTML = '<span class="loading-text">Loading videos...</span>';
 
-            // Check if user set the API Key
             if(API_KEY === 'YOUR_API_KEY_HERE') {
                 grid.innerHTML = '<span class="loading-text" style="color: #ff6b6b;">Error: You need to insert your YouTube API Key in the JavaScript code!</span>';
                 return;
@@ -303,6 +301,8 @@
                 // If they have a banner, use it
                 if (channel.brandingSettings.image && channel.brandingSettings.image.bannerExternalUrl) {
                     document.getElementById('page-banner').style.backgroundImage = `linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.2)), url('${channel.brandingSettings.image.bannerExternalUrl}')`;
+                } else {
+                    document.getElementById('page-banner').style.backgroundImage = `linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.2)), #333`;
                 }
 
                 // Fetch and display the videos
@@ -337,10 +337,10 @@
 
         // Initialize Wemmbu on page load
         window.onload = () => {
-            loadCreator('@Wemmbu', document.getElementById('card-@Wemmbu'));
+            loadCreator('@wemmbumc', document.getElementById('card-@wemmbumc'));
             // Fetch sidebar stats for the other creators in the background
             loadSidebarStats('@ParrotX2');
-            loadSidebarStats('@FlameFR');
+            loadSidebarStats('@FlameFrags');
             loadSidebarStats('@SpokeIsHere');
         };
 
