@@ -32,7 +32,6 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
-            transition: var(--transition);
         }
 
         .logo {
@@ -102,7 +101,6 @@
             display: flex;
             align-items: flex-end;
             padding: 40px;
-            transition: var(--transition);
         }
 
         .banner-content h1 {
@@ -185,36 +183,35 @@
     <div class="sidebar">
         <div class="logo">UNSTABLE</div>
         
-        <div class="creator-card active" onclick="loadCreator('@wemmbumc', this)" id="card-@wemmbumc">
-            <img class="pfp" src="" alt="Wemmbu" id="pfp-@wemmbumc">
+        <div class="creator-card active" onclick="loadCreator('@wemmbumc', this)" id="card-wemmbumc">
+            <img class="pfp" src="" alt="Wemmbu" id="pfp-wemmbumc">
             <div class="creator-info">
                 <span class="creator-name">Wemmbu</span>
-                <span class="sub-count" id="subs-@wemmbumc">Loading...</span>
+                <span class="sub-count" id="subs-wemmbumc">Loading...</span>
             </div>
         </div>
 
-        <div class="creator-card" onclick="loadCreator('@ParrotX2', this)" id="card-@ParrotX2">
-            <img class="pfp" src="" alt="Parrot" id="pfp-@ParrotX2">
+        <div class="creator-card" onclick="loadCreator('@ParrotX2', this)" id="card-ParrotX2">
+            <img class="pfp" src="" alt="Parrot" id="pfp-ParrotX2">
             <div class="creator-info">
                 <span class="creator-name">Parrot</span>
-                <span class="sub-count" id="subs-@ParrotX2">Loading...</span>
+                <span class="sub-count" id="subs-ParrotX2">Loading...</span>
             </div>
         </div>
 
-        <!-- CORRECTED FLAME FRAGS HANDLE HERE -->
-        <div class="creator-card" onclick="loadCreator('@FlameFragsMC', this)" id="card-@FlameFragsMC">
-            <img class="pfp" src="" alt="Flame" id="pfp-@FlameFragsMC">
+        <div class="creator-card" onclick="loadCreator('@FlameFragsMC', this)" id="card-FlameFragsMC">
+            <img class="pfp" src="" alt="Flame" id="pfp-FlameFragsMC">
             <div class="creator-info">
                 <span class="creator-name">Flame</span>
-                <span class="sub-count" id="subs-@FlameFragsMC">Loading...</span>
+                <span class="sub-count" id="subs-FlameFragsMC">Loading...</span>
             </div>
         </div>
 
-        <div class="creator-card" onclick="loadCreator('@SpokeIsHere', this)" id="card-@SpokeIsHere">
-            <img class="pfp" src="" alt="Spoke" id="pfp-@SpokeIsHere">
+        <div class="creator-card" onclick="loadCreator('@SpokeIsHere', this)" id="card-SpokeIsHere">
+            <img class="pfp" src="" alt="Spoke" id="pfp-SpokeIsHere">
             <div class="creator-info">
                 <span class="creator-name">Spoke</span>
-                <span class="sub-count" id="subs-@SpokeIsHere">Loading...</span>
+                <span class="sub-count" id="subs-SpokeIsHere">Loading...</span>
             </div>
         </div>
     </div>
@@ -237,10 +234,8 @@
     </div>
 
     <script>
-        // API Key
         const API_KEY = 'AIzaSyDJOX9IPCUCs8M8Mkv_ZdYd-pwxi5Z4fpQ';
         
-        // Formats subscriber count (e.g., 4350000 -> 4.35M)
         function formatSubs(count) {
             if (count >= 1000000) {
                 return (count / 1000000).toFixed(2) + 'M';
@@ -250,7 +245,11 @@
             return count;
         }
 
-        // 1. Fetch channel stats (Name, Avatar, Banner, Subs, and Uploads Playlist ID)
+        // Clean handle names for element IDs (removes the '@' symbol)
+        function getIdKey(handle) {
+            return handle.replace('@', '');
+        }
+
         async function fetchChannelData(handle) {
             const url = `https://youtube.googleapis.com/youtube/v3/channels?part=snippet,statistics,contentDetails,brandingSettings&forHandle=${handle}&key=${API_KEY}`;
             const response = await fetch(url);
@@ -262,7 +261,6 @@
             return null;
         }
 
-        // 2. Fetch the actual latest videos using the channel's "Uploads" playlist ID
         async function fetchVideos(playlistId) {
             const url = `https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=8&playlistId=${playlistId}&key=${API_KEY}`;
             const response = await fetch(url);
@@ -270,9 +268,7 @@
             return data.items || [];
         }
 
-        // 3. Load the creator data and inject it into the HTML
         async function loadCreator(handle, element) {
-            // Update active state in sidebar
             if (element) {
                 document.querySelectorAll('.creator-card').forEach(card => card.classList.remove('active'));
                 element.classList.add('active');
@@ -281,30 +277,41 @@
             const grid = document.getElementById('video-grid');
             grid.innerHTML = '<span class="loading-text">Loading videos...</span>';
 
-            if(API_KEY === 'YOUR_API_KEY_HERE') {
-                grid.innerHTML = '<span class="loading-text" style="color: #ff6b6b;">Error: You need to insert your YouTube API Key in the JavaScript code!</span>';
-                return;
+            // 1. Instant load from cache if available so UI doesn't hang
+            const cacheKey = `yt_cache_${handle}`;
+            const cachedData = localStorage.getItem(cacheKey);
+            if (cachedData) {
+                const data = JSON.parse(cachedData);
+                const keyId = getIdKey(handle);
+                document.getElementById(`pfp-${keyId}`).src = data.pfp;
+                document.getElementById(`subs-${keyId}`).innerText = `🔴 ${formatSubs(data.subs)} Subs`;
             }
 
             try {
-                // Get channel stats
                 const channel = await fetchChannelData(handle);
-                if (!channel) return;
+                if (!channel) {
+                    grid.innerHTML = '<span class="loading-text" style="color: #ff6b6b;">Channel not found.</span>';
+                    return;
+                }
 
                 const snippet = channel.snippet;
                 const stats = channel.statistics;
                 const uploadsPlaylistId = channel.contentDetails.relatedPlaylists.uploads;
+                
+                const pfpUrl = snippet.thumbnails.default.url;
+                const subCount = stats.subscriberCount;
+                const keyId = getIdKey(handle);
 
-                // Update Sidebar
-                document.getElementById(`pfp-${handle}`).src = snippet.thumbnails.default.url;
-                document.getElementById(`subs-${handle}`).innerText = `🔴 ${formatSubs(stats.subscriberCount)} Subs`;
+                // Update Sidebar & Save to Cache
+                document.getElementById(`pfp-${keyId}`).src = pfpUrl;
+                document.getElementById(`subs-${keyId}`).innerText = `🔴 ${formatSubs(subCount)} Subs`;
+                localStorage.setItem(cacheKey, JSON.stringify({ pfp: pfpUrl, subs: subCount }));
 
                 // Update Main Page Header
                 document.getElementById('page-title').innerText = snippet.title;
-                document.getElementById('page-desc').innerText = `${formatSubs(stats.subscriberCount)} Subscribers • ${stats.videoCount} Videos`;
+                document.getElementById('page-desc').innerText = `${formatSubs(subCount)} Subscribers • ${stats.videoCount} Videos`;
                 
-                // If they have a banner, use it
-                if (channel.brandingSettings.image && channel.brandingSettings.image.bannerExternalUrl) {
+                if (channel.brandingSettings && channel.brandingSettings.image && channel.brandingSettings.image.bannerExternalUrl) {
                     document.getElementById('page-banner').style.backgroundImage = `linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.2)), url('${channel.brandingSettings.image.bannerExternalUrl}')`;
                 } else {
                     document.getElementById('page-banner').style.backgroundImage = `linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.2)), #333`;
@@ -317,7 +324,6 @@
                 videos.forEach(video => {
                     const vidSnippet = video.snippet;
                     const videoId = vidSnippet.resourceId.videoId;
-                    // Get highest resolution thumbnail available
                     const thumbUrl = vidSnippet.thumbnails.maxres ? vidSnippet.thumbnails.maxres.url : vidSnippet.thumbnails.high.url;
                     
                     const card = document.createElement('div');
@@ -336,29 +342,53 @@
 
             } catch (error) {
                 console.error("Error fetching data: ", error);
-                grid.innerHTML = '<span class="loading-text" style="color: #ff6b6b;">Failed to fetch YouTube data. Check console for details.</span>';
+                grid.innerHTML = '<span class="loading-text" style="color: #ff6b6b;">Failed to fetch YouTube data. Check console.</span>';
             }
         }
 
-        // Initialize Wemmbu on page load
-        window.onload = () => {
-            loadCreator('@wemmbumc', document.getElementById('card-@wemmbumc'));
-            // Fetch sidebar stats for the other creators in the background
-            loadSidebarStats('@ParrotX2');
-            loadSidebarStats('@FlameFragsMC'); // CORRECTED FLAME FRAGS HANDLE HERE
-            loadSidebarStats('@SpokeIsHere');
-        };
-
-        // Helper function to just populate the sidebar counts on initial load
         async function loadSidebarStats(handle) {
-            if(API_KEY !== 'AIzaSyDJOX9IPCUCs8M8Mkv_ZdYd-pwxi5Z4fpQ') {
+            const cacheKey = `yt_cache_${handle}`;
+            const keyId = getIdKey(handle);
+            
+            // 1. Load cache immediately
+            const cachedData = localStorage.getItem(cacheKey);
+            if (cachedData) {
+                const data = JSON.parse(cachedData);
+                document.getElementById(`pfp-${keyId}`).src = data.pfp;
+                document.getElementById(`subs-${keyId}`).innerText = `🔴 ${formatSubs(data.subs)} Subs`;
+            }
+
+            // 2. Fetch fresh background data
+            try {
                 const channel = await fetchChannelData(handle);
                 if (channel) {
-                    document.getElementById(`pfp-${handle}`).src = channel.snippet.thumbnails.default.url;
-                    document.getElementById(`subs-${handle}`).innerText = `🔴 ${formatSubs(channel.statistics.subscriberCount)} Subs`;
+                    const pfpUrl = channel.snippet.thumbnails.default.url;
+                    const subCount = channel.statistics.subscriberCount;
+                    
+                    document.getElementById(`pfp-${keyId}`).src = pfpUrl;
+                    document.getElementById(`subs-${keyId}`).innerText = `🔴 ${formatSubs(subCount)} Subs`;
+                    
+                    localStorage.setItem(cacheKey, JSON.stringify({ pfp: pfpUrl, subs: subCount }));
                 }
+            } catch (error) {
+                console.error(`Failed to load sidebar stats for ${handle}`, error);
             }
         }
+
+        // Automatically trigger data load immediately when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            const creators = ['@wemmbumc', '@ParrotX2', '@FlameFragsMC', '@SpokeIsHere'];
+            
+            // Load main view for Wemmbu right away
+            loadCreator('@wemmbumc', document.getElementById('card-wemmbumc'));
+            
+            // Load sidebar counts for everyone else
+            creators.forEach(handle => {
+                if (handle !== '@wemmbumc') {
+                    loadSidebarStats(handle);
+                }
+            });
+        });
     </script>
 </body>
 </html>
