@@ -168,6 +168,11 @@
             overflow: hidden;
         }
 
+        .video-meta {
+            font-size: 13px;
+            color: var(--text-sub);
+        }
+
         .loading-text {
             color: var(--text-sub);
             font-style: italic;
@@ -180,7 +185,6 @@
     <div class="sidebar">
         <div class="logo">UNSTABLE</div>
         
-        <!-- UI elements updated with correct live API handles -->
         <div class="creator-card active" onclick="loadCreator('@wemmbumc', this)" id="card-@wemmbumc">
             <img class="pfp" src="" alt="Wemmbu" id="pfp-@wemmbumc">
             <div class="creator-info">
@@ -197,11 +201,12 @@
             </div>
         </div>
 
-        <div class="creator-card" onclick="loadCreator('@FlameFrags', this)" id="card-@FlameFrags">
-            <img class="pfp" src="" alt="Flame" id="pfp-@FlameFrags">
+        <!-- CORRECTED FLAME FRAGS HANDLE HERE -->
+        <div class="creator-card" onclick="loadCreator('@FlameFragsMC', this)" id="card-@FlameFragsMC">
+            <img class="pfp" src="" alt="Flame" id="pfp-@FlameFragsMC">
             <div class="creator-info">
                 <span class="creator-name">Flame</span>
-                <span class="sub-count" id="subs-@FlameFrags">Loading...</span>
+                <span class="sub-count" id="subs-@FlameFragsMC">Loading...</span>
             </div>
         </div>
 
@@ -340,7 +345,7 @@
             loadCreator('@wemmbumc', document.getElementById('card-@wemmbumc'));
             // Fetch sidebar stats for the other creators in the background
             loadSidebarStats('@ParrotX2');
-            loadSidebarStats('@FlameFrags');
+            loadSidebarStats('@FlameFragsMC'); // CORRECTED FLAME FRAGS HANDLE HERE
             loadSidebarStats('@SpokeIsHere');
         };
 
