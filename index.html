@@ -9,18 +9,25 @@
     
     <style>
         :root {
-            --bg-dark: #121212;
-            --panel-bg: rgba(30, 30, 30, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text-main: #ffffff;
-            --text-sub: #b3b3b3;
-            --accent: #3ea6ff;
-            --transition: 0.3s ease;
+            --bg-dark: #0a0a0c;
+            --sidebar-bg: #131316;
+            --panel-bg: rgba(22, 22, 28, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-border-hover: rgba(255, 255, 255, 0.2);
+            --text-main: #f3f4f6;
+            --text-sub: #9ca3af;
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
             margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: var(--bg-dark);
             color: var(--text-main);
             display: flex;
@@ -28,126 +35,223 @@
             overflow: hidden;
         }
 
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.15);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Sidebar */
         .sidebar {
-            width: 300px;
-            background: #181818;
+            width: 320px;
+            background: var(--sidebar-bg);
             border-right: 1px solid var(--glass-border);
-            padding: 20px 10px;
+            padding: 24px 14px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 16px;
             overflow-y: auto;
+            box-shadow: 5px 0 25px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--glass-border);
         }
 
         .logo {
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 20px;
-            letter-spacing: 2px;
-            background: linear-gradient(90deg, #fff, #888);
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, #ffffff 30%, #64748b 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .logo-sub {
+            font-size: 11px;
+            color: var(--text-sub);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-top: 4px;
         }
 
         .creator-card {
             display: flex;
             align-items: center;
-            gap: 15px;
-            padding: 12px;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid transparent;
+            gap: 14px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
             cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .creator-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 3px; height: 100%;
+            background: var(--accent);
+            opacity: 0;
             transition: var(--transition);
         }
 
-        .creator-card:hover, .creator-card.active {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid var(--glass-border);
-            transform: scale(1.02);
+        .creator-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--glass-border-hover);
+            transform: translateX(4px);
+        }
+
+        .creator-card.active {
+            background: rgba(56, 189, 248, 0.08);
+            border-color: rgba(56, 189, 248, 0.3);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .creator-card.active::before {
+            opacity: 1;
+        }
+
+        .pfp-wrapper {
+            position: relative;
+            flex-shrink: 0;
         }
 
         .pfp {
-            width: 50px;
-            height: 50px;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
-            background: #333;
+            background: #222;
             object-fit: cover;
-            flex-shrink: 0;
+            border: 2px solid rgba(255,255,255,0.1);
         }
 
         .creator-info {
             display: flex;
             flex-direction: column;
             flex-grow: 1;
+            min-width: 0;
         }
 
         .creator-name {
-            font-weight: 600;
-            font-size: 16px;
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .sub-count {
             font-size: 12px;
             color: var(--text-sub);
-            margin-bottom: 4px;
+            margin: 3px 0 6px 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .live-dot {
+            width: 7px;
+            height: 7px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px #ef4444;
         }
 
         .wiki-link {
             font-size: 11px;
+            font-weight: 600;
             color: var(--accent);
             text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
             width: fit-content;
-            transition: opacity 0.2s;
+            padding: 2px 8px;
+            background: rgba(56, 189, 248, 0.1);
+            border-radius: 6px;
+            transition: var(--transition);
         }
 
         .wiki-link:hover {
-            text-decoration: underline;
-            opacity: 0.8;
+            background: var(--accent);
+            color: #000;
         }
 
+        /* Main Content */
         .main-content {
             flex: 1;
             overflow-y: auto;
             position: relative;
-            background: linear-gradient(135deg, #121212 0%, #1a2620 100%); 
+            background: radial-gradient(circle at top right, #1e1b4b 0%, #0a0a0c 60%);
         }
 
         .banner {
-            height: 250px;
-            background: linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.2)), #333;
+            height: 280px;
+            background: linear-gradient(to bottom, rgba(10,10,12,0.2) 0%, rgba(10,10,12,0.9) 80%, #0a0a0c 100%), #222;
             background-size: cover;
             background-position: center;
             display: flex;
             align-items: flex-end;
             padding: 40px;
+            border-bottom: 1px solid var(--glass-border);
         }
 
         .banner-content h1 {
             margin: 0;
-            font-size: 48px;
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
 
         .banner-content p {
-            margin: 5px 0 0 0;
-            font-size: 20px;
+            margin: 8px 0 0 0;
+            font-size: 16px;
             color: var(--text-sub);
+            font-weight: 500;
         }
 
         .videos-section {
             padding: 40px;
         }
 
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
         .videos-section h2 {
-            margin-top: 0;
-            margin-bottom: 25px;
+            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
 
         .video-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
+            gap: 24px;
         }
 
         .video-card {
@@ -155,46 +259,68 @@
             border: 1px solid var(--glass-border);
             border-radius: 16px;
             overflow: hidden;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
             transition: var(--transition);
             cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
         .video-card:hover {
-            transform: translateY(-5px) scale(1.03);
-            border-color: rgba(255,255,255,0.3);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            transform: translateY(-6px) scale(1.02);
+            border-color: var(--glass-border-hover);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 20px rgba(56, 189, 248, 0.1);
+        }
+
+        .thumbnail-container {
+            position: relative;
+            width: 100%;
+            height: 165px;
+            background: #1a1a1e;
+            overflow: hidden;
         }
 
         .thumbnail {
             width: 100%;
-            height: 160px;
-            background: #2a2a2a;
+            height: 100%;
             object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .video-card:hover .thumbnail {
+            transform: scale(1.05);
         }
 
         .video-info {
-            padding: 15px;
+            padding: 16px;
         }
 
         .video-title {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
+            line-height: 1.4;
             margin: 0 0 10px 0;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            color: var(--text-main);
         }
 
         .video-meta {
-            font-size: 13px;
+            font-size: 12px;
             color: var(--text-sub);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .loading-text {
             color: var(--text-sub);
             font-style: italic;
+            font-size: 15px;
+            grid-column: 1 / -1;
+            padding: 40px 0;
+            text-align: center;
         }
     </style>
 </head>
@@ -202,41 +328,52 @@
 
     <!-- Sidebar -->
     <div class="sidebar">
-        <div class="logo">UNSTABLE</div>
+        <div class="logo-container">
+            <div class="logo">Unstable</div>
+            <div class="logo-sub">Creators Hub</div>
+        </div>
         
         <div class="creator-card active" onclick="loadCreator('@wemmbumc', this)" id="card-wemmbumc">
-            <img class="pfp" src="" alt="Wemmbu" id="pfp-wemmbumc">
+            <div class="pfp-wrapper">
+                <img class="pfp" src="" alt="Wemmbu" id="pfp-wemmbumc">
+            </div>
             <div class="creator-info">
                 <span class="creator-name">Wemmbu</span>
-                <span class="sub-count" id="subs-wemmbumc">Loading...</span>
-                <a href="https://unstable-universe-mc.fandom.com/wiki/Wemmbu" target="_blank" class="wiki-link" onclick="event.stopPropagation()">📖 View Wiki</a>
+                <span class="sub-count"><span class="live-dot"></span><span id="subs-wemmbumc">Loading...</span></span>
+                <a href="https://unstable-universe-mc.fandom.com/wiki/Wemmbu" target="_blank" class="wiki-link" onclick="event.stopPropagation()">📖 Wiki</a>
             </div>
         </div>
 
         <div class="creator-card" onclick="loadCreator('@ParrotX2', this)" id="card-ParrotX2">
-            <img class="pfp" src="" alt="Parrot" id="pfp-ParrotX2">
+            <div class="pfp-wrapper">
+                <img class="pfp" src="" alt="Parrot" id="pfp-ParrotX2">
+            </div>
             <div class="creator-info">
                 <span class="creator-name">Parrot</span>
-                <span class="sub-count" id="subs-ParrotX2">Loading...</span>
-                <a href="https://unstable-universe-mc.fandom.com/wiki/ParrotX2" target="_blank" class="wiki-link" onclick="event.stopPropagation()">📖 View Wiki</a>
+                <span class="sub-count"><span class="live-dot"></span><span id="subs-ParrotX2">Loading...</span></span>
+                <a href="https://unstable-universe-mc.fandom.com/wiki/ParrotX2" target="_blank" class="wiki-link" onclick="event.stopPropagation()">📖 Wiki</a>
             </div>
         </div>
 
         <div class="creator-card" onclick="loadCreator('@FlameFragsMC', this)" id="card-FlameFragsMC">
-            <img class="pfp" src="" alt="Flame" id="pfp-FlameFragsMC">
+            <div class="pfp-wrapper">
+                <img class="pfp" src="" alt="Flame" id="pfp-FlameFragsMC">
+            </div>
             <div class="creator-info">
                 <span class="creator-name">Flame</span>
-                <span class="sub-count" id="subs-FlameFragsMC">Loading...</span>
-                <a href="https://unstable-universe-mc.fandom.com/wiki/FlameFrags" target="_blank" class="wiki-link" onclick="event.stopPropagation()">📖 View Wiki</a>
+                <span class="sub-count"><span class="live-dot"></span><span id="subs-FlameFragsMC">Loading...</span></span>
+                <a href="https://unstable-universe-mc.fandom.com/wiki/FlameFrags" target="_blank" class="wiki-link" onclick="event.stopPropagation()">📖 Wiki</a>
             </div>
         </div>
 
         <div class="creator-card" onclick="loadCreator('@SpokeIsHere', this)" id="card-SpokeIsHere">
-            <img class="pfp" src="" alt="Spoke" id="pfp-SpokeIsHere">
+            <div class="pfp-wrapper">
+                <img class="pfp" src="" alt="Spoke" id="pfp-SpokeIsHere">
+            </div>
             <div class="creator-info">
                 <span class="creator-name">Spoke</span>
-                <span class="sub-count" id="subs-SpokeIsHere">Loading...</span>
-                <a href="https://unstable-universe-mc.fandom.com/wiki/SpokeIsHere" target="_blank" class="wiki-link" onclick="event.stopPropagation()">📖 View Wiki</a>
+                <span class="sub-count"><span class="live-dot"></span><span id="subs-SpokeIsHere">Loading...</span></span>
+                <a href="https://unstable-universe-mc.fandom.com/wiki/SpokeIsHere" target="_blank" class="wiki-link" onclick="event.stopPropagation()">📖 Wiki</a>
             </div>
         </div>
     </div>
@@ -251,7 +388,9 @@
         </div>
 
         <div class="videos-section">
-            <h2>Latest Videos</h2>
+            <div class="section-header">
+                <h2>Latest Uploads</h2>
+            </div>
             <div class="video-grid" id="video-grid">
                 <span class="loading-text">Fetching videos from YouTube...</span>
             </div>
@@ -307,13 +446,13 @@
                 const data = JSON.parse(cachedData);
                 const keyId = getIdKey(handle);
                 document.getElementById(`pfp-${keyId}`).src = data.pfp;
-                document.getElementById(`subs-${keyId}`).innerText = `🔴 ${formatSubs(data.subs)} Subs`;
+                document.getElementById(`subs-${keyId}`).innerText = `${formatSubs(data.subs)} Subs`;
             }
 
             try {
                 const channel = await fetchChannelData(handle);
                 if (!channel) {
-                    grid.innerHTML = '<span class="loading-text" style="color: #ff6b6b;">Channel not found.</span>';
+                    grid.innerHTML = '<span class="loading-text" style="color: #ef4444;">Channel not found.</span>';
                     return;
                 }
 
@@ -326,16 +465,16 @@
                 const keyId = getIdKey(handle);
 
                 document.getElementById(`pfp-${keyId}`).src = pfpUrl;
-                document.getElementById(`subs-${keyId}`).innerText = `🔴 ${formatSubs(subCount)} Subs`;
+                document.getElementById(`subs-${keyId}`).innerText = `${formatSubs(subCount)} Subs`;
                 localStorage.setItem(cacheKey, JSON.stringify({ pfp: pfpUrl, subs: subCount }));
 
                 document.getElementById('page-title').innerText = snippet.title;
                 document.getElementById('page-desc').innerText = `${formatSubs(subCount)} Subscribers • ${stats.videoCount} Videos`;
                 
                 if (channel.brandingSettings && channel.brandingSettings.image && channel.brandingSettings.image.bannerExternalUrl) {
-                    document.getElementById('page-banner').style.backgroundImage = `linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.2)), url('${channel.brandingSettings.image.bannerExternalUrl}')`;
+                    document.getElementById('page-banner').style.backgroundImage = `linear-gradient(to bottom, rgba(10,10,12,0.2) 0%, rgba(10,10,12,0.9) 80%, #0a0a0c 100%), url('${channel.brandingSettings.image.bannerExternalUrl}')`;
                 } else {
-                    document.getElementById('page-banner').style.backgroundImage = `linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.2)), #333`;
+                    document.getElementById('page-banner').style.backgroundImage = `linear-gradient(to bottom, rgba(10,10,12,0.2) 0%, rgba(10,10,12,0.9) 80%, #0a0a0c 100%), #1a1a1e`;
                 }
 
                 const videos = await fetchVideos(uploadsPlaylistId);
@@ -351,10 +490,12 @@
                     card.onclick = () => window.open(`https://youtube.com/watch?v=${videoId}`, '_blank');
                     
                     card.innerHTML = `
-                        <img class="thumbnail" src="${thumbUrl}" alt="Thumbnail">
+                        <div class="thumbnail-container">
+                            <img class="thumbnail" src="${thumbUrl}" alt="Thumbnail">
+                        </div>
                         <div class="video-info">
                             <h3 class="video-title">${vidSnippet.title}</h3>
-                            <span class="video-meta">Uploaded on ${new Date(vidSnippet.publishedAt).toLocaleDateString()}</span>
+                            <span class="video-meta">📅 ${new Date(vidSnippet.publishedAt).toLocaleDateString()}</span>
                         </div>
                     `;
                     grid.appendChild(card);
@@ -362,7 +503,7 @@
 
             } catch (error) {
                 console.error("Error fetching data: ", error);
-                grid.innerHTML = '<span class="loading-text" style="color: #ff6b6b;">Failed to fetch YouTube data. Check console.</span>';
+                grid.innerHTML = '<span class="loading-text" style="color: #ef4444;">Failed to fetch YouTube data. Check console.</span>';
             }
         }
 
@@ -374,7 +515,7 @@
             if (cachedData) {
                 const data = JSON.parse(cachedData);
                 document.getElementById(`pfp-${keyId}`).src = data.pfp;
-                document.getElementById(`subs-${keyId}`).innerText = `🔴 ${formatSubs(data.subs)} Subs`;
+                document.getElementById(`subs-${keyId}`).innerText = `${formatSubs(data.subs)} Subs`;
             }
 
             try {
@@ -384,7 +525,7 @@
                     const subCount = channel.statistics.subscriberCount;
                     
                     document.getElementById(`pfp-${keyId}`).src = pfpUrl;
-                    document.getElementById(`subs-${keyId}`).innerText = `🔴 ${formatSubs(subCount)} Subs`;
+                    document.getElementById(`subs-${keyId}`).innerText = `${formatSubs(subCount)} Subs`;
                     
                     localStorage.setItem(cacheKey, JSON.stringify({ pfp: pfpUrl, subs: subCount }));
                 }
