@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unstable Creators Live</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="icon.png">
+    
     <style>
         :root {
             --bg-dark: #121212;
@@ -245,7 +248,6 @@
             return count;
         }
 
-        // Clean handle names for element IDs (removes the '@' symbol)
         function getIdKey(handle) {
             return handle.replace('@', '');
         }
@@ -277,7 +279,6 @@
             const grid = document.getElementById('video-grid');
             grid.innerHTML = '<span class="loading-text">Loading videos...</span>';
 
-            // 1. Instant load from cache if available so UI doesn't hang
             const cacheKey = `yt_cache_${handle}`;
             const cachedData = localStorage.getItem(cacheKey);
             if (cachedData) {
@@ -302,12 +303,10 @@
                 const subCount = stats.subscriberCount;
                 const keyId = getIdKey(handle);
 
-                // Update Sidebar & Save to Cache
                 document.getElementById(`pfp-${keyId}`).src = pfpUrl;
                 document.getElementById(`subs-${keyId}`).innerText = `🔴 ${formatSubs(subCount)} Subs`;
                 localStorage.setItem(cacheKey, JSON.stringify({ pfp: pfpUrl, subs: subCount }));
 
-                // Update Main Page Header
                 document.getElementById('page-title').innerText = snippet.title;
                 document.getElementById('page-desc').innerText = `${formatSubs(subCount)} Subscribers • ${stats.videoCount} Videos`;
                 
@@ -317,7 +316,6 @@
                     document.getElementById('page-banner').style.backgroundImage = `linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.2)), #333`;
                 }
 
-                // Fetch and display the videos
                 const videos = await fetchVideos(uploadsPlaylistId);
                 grid.innerHTML = ''; 
 
@@ -350,7 +348,6 @@
             const cacheKey = `yt_cache_${handle}`;
             const keyId = getIdKey(handle);
             
-            // 1. Load cache immediately
             const cachedData = localStorage.getItem(cacheKey);
             if (cachedData) {
                 const data = JSON.parse(cachedData);
@@ -358,7 +355,6 @@
                 document.getElementById(`subs-${keyId}`).innerText = `🔴 ${formatSubs(data.subs)} Subs`;
             }
 
-            // 2. Fetch fresh background data
             try {
                 const channel = await fetchChannelData(handle);
                 if (channel) {
@@ -375,14 +371,11 @@
             }
         }
 
-        // Automatically trigger data load immediately when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
             const creators = ['@wemmbumc', '@ParrotX2', '@FlameFragsMC', '@SpokeIsHere'];
             
-            // Load main view for Wemmbu right away
             loadCreator('@wemmbumc', document.getElementById('card-wemmbumc'));
             
-            // Load sidebar counts for everyone else
             creators.forEach(handle => {
                 if (handle !== '@wemmbumc') {
                     loadSidebarStats(handle);
